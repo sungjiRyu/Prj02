@@ -23,24 +23,33 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.readers.be3.entity.ArticleCommentEntity;
 import com.readers.be3.entity.ArticleInfoEntity;
+import com.readers.be3.entity.SearchArticleView;
 import com.readers.be3.entity.UserInfoEntity;
 import com.readers.be3.entity.image.ArticleImgEntity;
+import com.readers.be3.repository.ArticleCommentRepository;
 import com.readers.be3.repository.ArticleInfoRepository;
+import com.readers.be3.repository.SearchArticleViewRepository;
 import com.readers.be3.repository.UserInfoRepository;
 import com.readers.be3.repository.image.ArticleImgRepository;
 import com.readers.be3.vo.article.ArticleModifyVO;
-import com.readers.be3.vo.article.writeArticleVO;
+import com.readers.be3.vo.article.GetSearchArticleVO;
+import com.readers.be3.vo.article.PostArticleVO;
+import com.readers.be3.vo.article.PostWriterCommentVO;
+import com.readers.be3.vo.article.SearchNicknameVO;
 
 @Service
 public class ArticleService {
     @Autowired ArticleImgRepository articleImgRepo;
     @Autowired ArticleInfoRepository articleInfoRepo;
     @Autowired UserInfoRepository userInfoRepo;
+    @Autowired SearchArticleViewRepository searchArticleRepo;
+    @Autowired ArticleCommentRepository ArticleCommentRepo;
     @Value("${file.image.article}") String ArticleImgPath;
 
     // 게시글 작성 
-    public Map<String, Object> writeArticle(writeArticleVO data){
+    public Map<String, Object> writeArticle(PostArticleVO data){
         // VO를 통해 게시글 제목과 내용, 파일(이미지)을 입력받음
         Map<String, Object> resultMap = new LinkedHashMap<String, Object>();
         ArticleInfoEntity articleInfoEntity = null;
@@ -142,39 +151,24 @@ public class ArticleService {
 public Map<String, Object> getArticleList(String type, String keyword, Pageable pageable){
 Map<String, Object> resultMap = new LinkedHashMap<String, Object>();
 
-
 if(type.equals("all")){
-    Page<ArticleInfoEntity> page = articleInfoRepo.findAll(pageable);
-    List<ArticleInfoEntity> status = articleInfoRepo.findAll();
-    
-    // ai_public 이 1일때만 보이게 (aiPublic를 어디서 가져오지?)
-    // 게시글 조회 api , 게시글 보기 api 따로 만들어야 하나?
-    page.getContent();
+    // Page<ArticleInfoEntity> page = articleInfoRepo.findAllAndAiPublicContains(1,pageable);
+    // 게시글 조회 api , 게시글 보기 api 따로 작성
+    Page<GetSearchArticleVO> page = articleInfoRepo.findAllArtilce(pageable);
     resultMap.put("data", page);
     resultMap.put("status", true);
     resultMap.put("message", "전체 게시글 리스트 조회.");
     resultMap.put("code", HttpStatus.OK);
 }
 else if(type.equals("writer")){
-    // 유저 아이디 검색해서 해당하는 유저정보 가져오기
-    UserInfoEntity writerInfo = userInfoRepo.findByUiNickname(keyword);
-    if(writerInfo == null){
-
-    resultMap.put("status", false);
-    resultMap.put("message", "해당하는 유저가 없습니다.");
-    resultMap.put("code", HttpStatus.BAD_REQUEST);
-    // 검색한 유저정보에서 유저seq로 작성한 게시글 검색
-    }
-    else{
-    Page<ArticleInfoEntity> page = articleInfoRepo.findByAiUiSeq(writerInfo.getUiSeq(), pageable);
+    Page<SearchNicknameVO> page = searchArticleRepo.searchNickname(keyword, pageable);
     resultMap.put("data", page);
     resultMap.put("status", true);
     resultMap.put("message", "닉네임으로 검색(검색어 :" + keyword +").");
     resultMap.put("code", HttpStatus.OK);
-    }
 }
 else if(type.equals("title")){
-    Page<ArticleInfoEntity> page = articleInfoRepo.findByAiTitleContains(keyword, pageable);
+    Page<GetSearchArticleVO> page = articleInfoRepo.findByAiTitleContains(keyword, pageable);
     
     resultMap.put("data", page);
     resultMap.put("status", true);
@@ -182,7 +176,7 @@ else if(type.equals("title")){
     resultMap.put("code", HttpStatus.OK);
 }
 else if(type.equals("content")){
-    Page<ArticleInfoEntity> page = articleInfoRepo.findByAiContentContains(keyword, pageable);
+    Page<GetSearchArticleVO> page = articleInfoRepo.findByAiContentContains(keyword, pageable);
 
     resultMap.put("data", page);
     resultMap.put("status", true);
@@ -195,6 +189,31 @@ else{
     resultMap.put("code", HttpStatus.BAD_REQUEST);
 }
 return resultMap;
+}
+
+// 게시글 상세조회
+public Map<String, Object> getArticleDetailInfo(Long aiSeq){
+    Map<String, Object> resultMap = new HashMap<>();
+    ArticleInfoEntity detailInfo = articleInfoRepo.findByAiSeq(aiSeq);
+    if(detailInfo.getAiPublic() == 2){
+        resultMap.put("status", false);
+        resultMap.put("message", "비공개된 게시글이에요.");
+        resultMap.put("code", HttpStatus.BAD_REQUEST);
+    } 
+    else if(detailInfo.getAiStatus() == 2){
+        resultMap.put("status", false);
+        resultMap.put("message", "삭제된 게시글이에요.");
+        resultMap.put("code", HttpStatus.BAD_REQUEST);
+    } 
+    else{
+        resultMap.put("data", detailInfo);
+        resultMap.put("status", true);
+        resultMap.put("message", "게시글 상세보기.");
+        resultMap.put("code", HttpStatus.BAD_REQUEST);
+    } 
+    
+
+    return resultMap;
 }
 
 // 게시글 수정
@@ -221,7 +240,6 @@ public Map<String, Object> modifyArticle(Long uiSeq, Long aiSeq, ArticleModifyVO
         resultMap.put("message", "삭제된 게시글 입니다.");
         resultMap.put("code", HttpStatus.BAD_REQUEST);
     }
-   
     // 유효성 검사를 통과했다면
     else{
         if (data.getAiTitle() != null) {
@@ -278,4 +296,38 @@ public Map<String, Object> deleteArticle(Long uiSeq, Long aiSeq){
     return resultMap;
 }
 
+//댓글 작성
+public Map<String, Object> postWriteComment(PostWriterCommentVO data){
+    Map<String, Object> resultMap = new HashMap<>();
+    
+    if(data.getAcContent() == null){
+        resultMap.put("status", false);
+        resultMap.put("message", "내용을 입력하세요.");
+        resultMap.put("code", HttpStatus.BAD_REQUEST);
+    }
+    else if(data.getAcAiSeq() == null){
+        resultMap.put("status", false);
+        resultMap.put("message", "한줄평을 달 게시글을 선택해주세요.");
+        resultMap.put("code", HttpStatus.BAD_REQUEST);
+    }
+    if(data.getAcUiSeq() == null){
+        resultMap.put("status", false);
+        resultMap.put("message", "로그인을 해주세요.");
+        resultMap.put("code", HttpStatus.BAD_REQUEST);
+    }
+    else{
+        ArticleCommentEntity comment = ArticleCommentEntity.builder()
+                                        .acContent(data.getAcContent())
+                                        .acAiSeq(data.getAcAiSeq())
+                                        .acUiSeq(data.getAcUiSeq())
+                                        .build();
+                                        ArticleCommentRepo.save(comment);
+        resultMap.put("status", true);
+        resultMap.put("message", "댓글이 등록되었습니다..");
+        resultMap.put("code", HttpStatus.OK);
+    }
+
+    return resultMap;
+
+}
 }

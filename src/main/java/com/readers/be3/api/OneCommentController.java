@@ -1,6 +1,7 @@
 package com.readers.be3.api;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import com.readers.be3.dto.request.OneCommentDeleteRequest;
 import com.readers.be3.dto.request.OneCommentRequest;
 import com.readers.be3.dto.request.OneCommentUpdateRequest;
+import com.readers.be3.dto.response.OneCommentListDTO;
 import com.readers.be3.dto.response.OneCommentResponse;
 import com.readers.be3.service.OneCommentService;
 
@@ -35,31 +37,37 @@ public class OneCommentController {
 
   @Operation(summary = "한줄평 추가", description = "한줄평을 추가합니다")
   @PostMapping("/add")
-  public ResponseEntity<Object> OneCommentAdd(@Parameter(description = "한줄평추가 request") @RequestBody OneCommentRequest request){
+  public ResponseEntity<OneCommentResponse> OneCommentAdd(@Parameter(description = "한줄평추가 request") @RequestBody OneCommentRequest request){
     OneCommentResponse result = OneCommentResponse.toResponse(oneCommentService.OneCommentAdd(request.getUserSeq(),request.getBookSeq(),request.getComment(),request.getScore()));
     return new ResponseEntity<>(result,HttpStatus.OK);
   }
 
   @Operation(summary = "한줄평 삭제", description = "등록된 한줄평 delete를 삭제처리합니다")
   @DeleteMapping("/delete")
-  public ResponseEntity<Object> OneCommentAdd(@Parameter(description = "삭제dto") @RequestBody OneCommentDeleteRequest request){
+  public ResponseEntity<OneCommentResponse> OneCommentAdd(@Parameter(description = "삭제dto") @RequestBody OneCommentDeleteRequest request){
     return new ResponseEntity<>(OneCommentResponse.toResponse(oneCommentService.OneCommentDelete(request.getUserSeq(), request.getOneCommentSeq())),HttpStatus.OK);
 
   }
 
   @Operation(summary = "한줄평 수정", description = "등록된 한줄평update합니다 ")
   @PutMapping("/update")
-  public ResponseEntity<Object> OneCommentUpdate(@Parameter(description = "updateDTO") @RequestBody OneCommentUpdateRequest request){
+  public ResponseEntity<OneCommentResponse> OneCommentUpdate(@Parameter(description = "updateDTO") @RequestBody OneCommentUpdateRequest request){
     return new ResponseEntity<>(OneCommentResponse.toResponse(oneCommentService.OneCommentUpdate(request.getUiSeq(), request.getOnecommentSeq(), request.getContent())),HttpStatus.OK);
 
   }
 
   @Operation(summary = "한줄평 리스트", description = "등록된 한줄평을 10개단위로 책번호를통해 조회합니다")
   @GetMapping("/{bookseq}/list")
-  public ResponseEntity<Object> OneCommentList(@Parameter(description = "책번호", example = "1") @PathVariable("bookseq") Long bookseq,
+  public ResponseEntity<Page<OneCommentListDTO>> OneCommentList(@Parameter(description = "책번호", example = "1") @PathVariable("bookseq") Long bookseq,
   @Parameter(description = "페이지", example = "0") @RequestParam Integer page){
     Sort sort2 = Sort.by("ocSeq").ascending();
     Pageable pageable = PageRequest.of(page, 10, sort2);
     return new ResponseEntity<>(oneCommentService.oneCommentList(bookseq, pageable),HttpStatus.OK);
+
+  }
+
+  @GetMapping("/{onecommentseq}")
+    public ResponseEntity<Object> getOneComment(@Parameter(description = "한줄평 번호", example = "1") @PathVariable("onecommentseq") Long onecommentseq){
+      return new ResponseEntity<>(oneCommentService.getOneComment(onecommentseq),HttpStatus.OK);
   }
 }
