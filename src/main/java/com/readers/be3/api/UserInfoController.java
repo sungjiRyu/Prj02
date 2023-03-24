@@ -1,14 +1,10 @@
 package com.readers.be3.api;
 
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -21,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.readers.be3.service.UserInfoService;
 import com.readers.be3.vo.mypage.RequestUserVO;
-import com.readers.be3.vo.mypage.ResponseFinishedBookVO;
 import com.readers.be3.vo.mypage.ResponseUserArticleVO;
 import com.readers.be3.vo.mypage.ResponseUserInfoVO;
 import com.readers.be3.vo.mypage.SnsLoginRequest;
@@ -67,7 +62,7 @@ public class UserInfoController {
       @Parameter(description = "회원번호", example = "87") @RequestParam Long uiSeq, @RequestBody UserNameVO data) throws Exception{
     return new ResponseEntity<>(uService.updateUserName(uiSeq, data), HttpStatus.OK);
   }
-  
+
   @Operation(summary = "회원 사진추가", description = "회원정보 번호(uiSeq)를 통해 회원사진을 수정(추가)합니다. filename과 uri은 입력 안해도 됩니다")
     @PutMapping(value = "/update/photo", consumes= MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<RequestUserVO> updateUserPhoto(
@@ -80,7 +75,7 @@ public class UserInfoController {
   @Operation(summary = "회원 정보", description = "회원정보 번호(uiSeq)를 통해 회원의 정보를 조회합니다. 마이페이지 화면 중앙의 데이터 입니다")
     @GetMapping("/info") //회원정보 조회
     public ResponseEntity<ResponseUserInfoVO> getUserInfo(
-      @Parameter(description = "회원번호", example = "87") @RequestParam Long uiSeq){
+      @Parameter(description = "회원번호", example = "172") @RequestParam Long uiSeq){
       return new ResponseEntity<>(uService.getUserInfo(uiSeq),HttpStatus.OK);
     }  
 
@@ -91,12 +86,12 @@ public class UserInfoController {
   //     return new ResponseEntity<>(uService.getUserBook(uiSeq),HttpStatus.OK);
   //   }  
 
-  @Operation(summary = "완독한 책의 평점, 독후감 확인", description = "회원정보 번호(uiSeq)와 도서번호(biSeq)를 통해 해당 도서의 평점과 독후감을 조회합니다.")
+  @Operation(summary = "완독한 책의 평점, 독후감 확인", description = "회원정보 번호(uiSeq)와 도서 ISBN(isbn)을 통해 해당 도서의 평점과 독후감을 조회합니다.")
     @GetMapping("/article") //평점, 독후감 확인
     public ResponseEntity<ResponseUserArticleVO> getUserArticle(
       @Parameter(description = "회원번호", example = "37") @RequestParam Long uiSeq, 
-      @Parameter(description = "책번호", example = "1") @RequestParam Long biSeq){
-      return new ResponseEntity<>(uService.getUserArticle(uiSeq, biSeq), HttpStatus.OK);
+      @Parameter(description = "책 ISBN", example = "9788979592566") @RequestParam String isbn){
+      return new ResponseEntity<>(uService.getUserArticle(uiSeq, isbn), HttpStatus.OK);
     }  
 
   @Operation(summary = "sns 로그인", description = "sns로 로그인합니다. 쎄션에 저장할 유저번호를 반환합니다")

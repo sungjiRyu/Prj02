@@ -4,13 +4,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +27,11 @@ import com.readers.be3.entity.UserInfoEntity;
 import com.readers.be3.entity.image.UserImgEntity;
 import com.readers.be3.exception.ErrorResponse;
 import com.readers.be3.exception.ReadersProjectException;
+import com.readers.be3.repository.ArticleInfoRepository;
 import com.readers.be3.repository.ArticleViewRepository;
 import com.readers.be3.repository.BookInfoRepository;
 import com.readers.be3.repository.MyPageViewRepository;
+import com.readers.be3.repository.OneCommentRepository;
 import com.readers.be3.repository.OneCommentViewRepository;
 import com.readers.be3.repository.UserInfoRepository;
 import com.readers.be3.repository.ScheduleInfoRepository;
@@ -37,11 +39,9 @@ import com.readers.be3.repository.image.UserImgRepository;
 import com.readers.be3.utilities.AESAlgorithm;
 import com.readers.be3.utilities.RandomNameUtils;
 import com.readers.be3.vo.mypage.RequestUserVO;
-import com.readers.be3.vo.mypage.ResponseBookInfoVO;
 import com.readers.be3.vo.mypage.ResponseFinishedBookVO;
 import com.readers.be3.vo.mypage.ResponseUserArticleVO;
 import com.readers.be3.vo.mypage.ResponseUserInfoVO;
-import com.readers.be3.vo.mypage.SnsLoginRequest;
 import com.readers.be3.vo.mypage.UserImageVO;
 import com.readers.be3.vo.mypage.UserInfoVO;
 import com.readers.be3.vo.mypage.UserLoginVO;
@@ -56,6 +56,8 @@ public class UserInfoService {
     @Autowired ArticleViewRepository a_repo;
     @Autowired OneCommentViewRepository o_repo;
     @Autowired BookInfoRepository b_repo;
+    @Autowired OneCommentRepository oneCommentRepository;
+    @Autowired ArticleInfoRepository articleInfoRepository;
     
     @Value("${file.image.user}") String user_img_path;
 
@@ -292,9 +294,20 @@ public class UserInfoService {
 
   public ResponseUserInfoVO getUserInfo(Long uiSeq) { //마이페이지 정보출력
     MyPageView mView= v_repo.findByUiSeq(uiSeq);
-    if (mView == null)
-      throw new ReadersProjectException(ErrorResponse.of(HttpStatus.NOT_FOUND, String.format("not found user %d ", uiSeq)));
-    return ResponseUserInfoVO.toResponse(mView);
+    if (mView == null) throw new ReadersProjectException(ErrorResponse.of(HttpStatus.NOT_FOUND, String.format("not found user %d ", uiSeq)));
+    
+    ResponseUserInfoVO vo = new ResponseUserInfoVO(mView);
+    vo.setUserArticle(articleInfoRepository.countByAiUiSeq(uiSeq));
+    vo.setUserOneComment(oneCommentRepository.countByOcUiSeq(uiSeq));
+    Long userDays = 0L;
+    for (ScheduleInfoEntity entity : scheduleInfoRepository.findBySiUiSeq(uiSeq)) {
+      // if (entity.getSiStartDate()==null || entity.getSiEndDate()==null) {
+      //   continue;
+      // }
+      userDays += ChronoUnit.DAYS.between(entity.getSiStartDate(), entity.getSiEndDate())+1L;
+    }
+    vo.setUserDays(userDays);
+    return vo;
   }
 
   public List<ResponseFinishedBookVO> getUserBook(Long uiSeq) { //완독한 책 출력
@@ -308,12 +321,39 @@ public class UserInfoService {
     return list;
   }
 
-  public ResponseUserArticleVO getUserArticle(Long uiSeq, Long biSeq) { //마이페이지 유저가 쓴 독후감과 평점 출력
+  public ResponseUserArticleVO getUserArticle(Long uiSeq, String isbn) { //마이페이지 유저가 쓴 독후감과 평점 출력
+    Long biSeq = b_repo.findByBiIsbnEquals(isbn).getBiSeq();
+    if (biSeq==null) biSeq = -1L;
     ArticleView aView = a_repo.findByUiSeqAndBiSeq(uiSeq, biSeq);
     OneCommentView oView = o_repo.findByUiSeqAndBiSeq(uiSeq, biSeq);
-    if (aView == null && oView ==null)
-    throw new ReadersProjectException(ErrorResponse.of(HttpStatus.NOT_FOUND, String.format("not found  uiSeq : %d , biSeq : %d ", uiSeq, biSeq)));
-      return ResponseUserArticleVO.toResponse(aView, oView);
+    // if (aView == null && oView ==null) {
+      // throw new ReadersProjectException(ErrorResponse.of(HttpStatus.NOT_FOUND, String.format("not found  uiSeq : %d , biSeq : %d ", uiSeq, biSeq)));
+    // }
+    Long aiSeq = null;
+    Long ocSeq = null;
+    if (articleInfoRepository.findByAiUiSeqAndAiBiSeq(uiSeq, biSeq)!=null) aiSeq = articleInfoRepository.findByAiUiSeqAndAiBiSeq(uiSeq, biSeq).getAiSeq();
+    if (oneCommentRepository.findByOcUiSeqAndOcBiSeq(uiSeq, biSeq)!=null)  ocSeq = oneCommentRepository.findByOcUiSeqAndOcBiSeq(uiSeq, biSeq).getOcSeq();
+
+    if (aView==null && oView==null) {
+      ResponseUserArticleVO vo = new ResponseUserArticleVO();
+      return vo;
+    }
+    else if (aView==null) {
+      ResponseUserArticleVO vo = new ResponseUserArticleVO(oView);
+      vo.setOcSeq(ocSeq);
+      return vo;
+    }
+    else if (oView==null) {
+      ResponseUserArticleVO vo = new ResponseUserArticleVO(aView);
+      vo.setAiSeq(aiSeq);
+      return vo;
+    }
+    else {
+      ResponseUserArticleVO vo = new ResponseUserArticleVO(aView, oView);
+      vo.setAiSeq(aiSeq);
+      vo.setOcSeq(ocSeq);
+      return vo;
+    }
   }
 }
 

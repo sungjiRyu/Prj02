@@ -20,7 +20,6 @@ import org.springframework.data.domain.Sort;
 import com.readers.be3.dto.request.OneCommentDeleteRequest;
 import com.readers.be3.dto.request.OneCommentRequest;
 import com.readers.be3.dto.request.OneCommentUpdateRequest;
-import com.readers.be3.dto.request.OneCommentViewsDTO;
 import com.readers.be3.dto.response.OneCommentListDTO;
 import com.readers.be3.dto.response.OneCommentResponse;
 import com.readers.be3.service.OneCommentService;
@@ -28,7 +27,6 @@ import com.readers.be3.service.OneCommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 
 @Tag(name = "한줄평", description = "한줄평 crd api")
 @RestController
@@ -54,17 +52,17 @@ public class OneCommentController {
   @Operation(summary = "한줄평 수정", description = "등록된 한줄평update합니다 ")
   @PutMapping("/update")
   public ResponseEntity<OneCommentResponse> OneCommentUpdate(@Parameter(description = "updateDTO") @RequestBody OneCommentUpdateRequest request){
-    return new ResponseEntity<>(OneCommentResponse.toResponse(oneCommentService.OneCommentUpdate(request.getUiSeq(), request.getOnecommentSeq(), request.getContent())),HttpStatus.OK);
+    return new ResponseEntity<>(OneCommentResponse.toResponse(oneCommentService.OneCommentUpdate(request.getUiSeq(), request.getOnecommentSeq(), request.getContent(), request.getScore())),HttpStatus.OK);
 
   }
 
   @Operation(summary = "한줄평 리스트", description = "등록된 한줄평을 10개단위로 책번호를통해 조회합니다")
-  @GetMapping("/{biSeq}/list")
-  public ResponseEntity<Page<OneCommentListDTO>> OneCommentList(@Parameter(description = "책번호", example = "1") @PathVariable("biSeq") Long biSeq,
+  @GetMapping("/{isbn}/list")
+  public ResponseEntity<Page<OneCommentListDTO>> OneCommentList(@Parameter(description = "책 ISBN", example = "9788979592566") @PathVariable("isbn") String isbn,
   @Parameter(description = "페이지", example = "0") @RequestParam Integer page){
     Sort sort2 = Sort.by("ocSeq").ascending();
     Pageable pageable = PageRequest.of(page, 10, sort2);
-    return new ResponseEntity<>(oneCommentService.oneCommentList(biSeq, pageable),HttpStatus.OK);
+    return new ResponseEntity<>(oneCommentService.oneCommentList(isbn, pageable),HttpStatus.OK);
 
   }
 

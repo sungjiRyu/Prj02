@@ -1,15 +1,8 @@
 package com.readers.be3.api;
 
 import java.util.List;
-import java.util.Map;
-
-import com.readers.be3.entity.ArticleCommentEntity;
-import com.readers.be3.entity.ArticleInfoEntity;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,7 +19,6 @@ import org.springframework.http.MediaType;
 import com.readers.be3.service.ArticleService;
 import com.readers.be3.vo.article.ArticleDetailVO;
 import com.readers.be3.vo.article.ArticleModifyVO;
-import com.readers.be3.vo.article.GetSearchArticleVO;
 import com.readers.be3.vo.article.PatchCommentVO;
 import com.readers.be3.vo.article.PostArticleVO;
 import com.readers.be3.vo.article.PostWriterCommentVO;
@@ -59,7 +51,7 @@ public class ArticleAPIController {
     @Operation(summary = "게시글 목록 조회 api", description = "게시글 리스트와 페이지 정보를 보여줍니다. type으로 검색 타입을 지정하고 keyword로 검색할 수 있습니다. *등록일 기준 내림차순으로 정렬합니다")
     @GetMapping("/article/{type}")
     public ResponseEntity<List<ArticleSearchResponseVO>> searchArticle(
-            @Parameter(description = "검색타입 all(전체), writer(작성자), title(제목), content(내용)", example = "all") @PathVariable String type,
+            @Parameter(description = "검색타입 all(전체), writer(작성자), title(제목), content(내용), book(isbn번호로 검색)", example = "all") @PathVariable String type,
             @Parameter(description = "검색어(type=all일 경우 사용하지 않습니다.)") @RequestParam(required = false, value = "keyword") String keyword,
             @Parameter(description = "page default=0", example = "0") @RequestParam @Nullable Integer page,
             @Parameter(description = "size defult=10", example = "10") @RequestParam @Nullable Integer size
@@ -131,5 +123,17 @@ public class ArticleAPIController {
         ResponseMessageVO response = articleService.deleteComment(uiSeq, acSeq);
         return new ResponseEntity<>(response, HttpStatus.OK);
         
+    }
+
+    // 게시글 추천/비추천
+    @Operation(summary = " 게시글 추천/비추천 api", description = "게시글 추천/비추천")
+    @PatchMapping("/article/comment/recommend")
+    public ResponseEntity<ResponseMessageVO> recommendAriticle(
+        @Parameter(description = "현재 로그인한 사용자 번호") @RequestParam Long arUiSeq,
+        @Parameter(description = "추천/비추천할 게시글 번호") @RequestParam Long arAiSeq,
+        @Parameter(description = "추천/비추천(1=추천/2=비추천)") @RequestParam Integer arStatus)
+    {
+        ResponseMessageVO response = articleService.recommendAriticle(arUiSeq, arAiSeq ,arStatus);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

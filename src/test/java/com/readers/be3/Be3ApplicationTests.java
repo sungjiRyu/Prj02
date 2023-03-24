@@ -1,20 +1,24 @@
 package com.readers.be3;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import com.readers.be3.entity.BookInfoEntity;
+import com.readers.be3.entity.UserInfoEntity;
 import com.readers.be3.repository.BookInfoRepository;
+import com.readers.be3.repository.UserInfoRepository;
 import com.readers.be3.service.UserInfoService;
 import com.readers.be3.utilities.RandomNameUtils;
 
 @SpringBootTest
 class Be3ApplicationTests {
+	@Autowired UserInfoRepository userInfoRepository;
 	@Autowired BookInfoRepository bookInfoRepository;
-
 	@Autowired UserInfoService userInfoService;
 
 	@Test
@@ -39,6 +43,8 @@ class Be3ApplicationTests {
 		System.out.println("isAfter : " + date1.isAfter(date2));
 		System.out.println("isBefore : " + date1.isBefore(date2));
 		System.out.println("isBefore : " + date3.isBefore(date2));
+
+		System.out.println("plusDays : " + date1.plusDays(1));
 	}
 
 	@Test
@@ -56,5 +62,30 @@ class Be3ApplicationTests {
 		System.out.println(RandomNameUtils.MakeRandomUri("jpg", 146L));
 		System.out.println(RandomNameUtils.MakeRandomUri("png", 146L));
 		System.out.println(RandomNameUtils.MakeRandomUri("gif", 146L));
+	}
+
+	@Test
+	void testUserInfoUpdate() {
+		UserInfoEntity uEntity = userInfoRepository.findById(1L).get();
+        BookInfoEntity bEntity = bookInfoRepository.findById(2L).get();
+
+		Integer totalBook = uEntity.getUiTotalBook();
+        Integer totalPage = uEntity.getUiTotalPage();
+		System.out.println("totalBook : " + totalBook + ", totalPage : " + totalPage);
+		
+		uEntity = UserInfoEntity.builder().uiTotalBook(totalBook+1).uiTotalPage(totalPage+bEntity.getBiPage()).build();
+		System.out.println("totalBook : " + totalBook + ", totalPage : " + totalPage);
+		userInfoRepository.save(uEntity);
+	}
+
+	@Test
+	void testLocalDate2() {
+		// LocalDate date1 = LocalDate.of(2022, 12, 19);
+		LocalDate date1 = LocalDate.of(2023, 03, 03);
+		LocalDate date2 = LocalDate.now();
+		
+		Period period = Period.between(date1, date2);
+		System.out.println(period.getDays());
+		System.out.println(ChronoUnit.DAYS.between(date1, date2));
 	}
 }

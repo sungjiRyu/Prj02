@@ -34,5 +34,4 @@ public class GetSearchArticleVO {
     public Integer aiBiSeq;
     @Schema(description = "닉네임(작성자)")
     public String uiNickname;
-    
 }

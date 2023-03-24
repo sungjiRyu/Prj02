@@ -54,6 +54,10 @@ public class OneCommentService {
     if (oneCommentEntityList.size() > 0)
       throw new ReadersProjectException(ErrorResponse.of(HttpStatus.CREATED, String.format("already wrote oneComment")));
     OneCommentEntity oneCommentEntity = oneCommentRepository.save(OneCommentEntity.of(comment, score, userInfoEntity, bookInfoEntity));
+    
+    UserInfoEntity newEntity = new UserInfoEntity(userInfoEntity, 100);
+    useInfoRepository.save(newEntity);
+
     return oneCommentEntity;
   }
 
@@ -67,31 +71,39 @@ public class OneCommentService {
       throw new ReadersProjectException(ErrorResponse.of(HttpStatus.NOT_FOUND, String.format("%s not found oneComment", uiSeq)));
     oneEntity.setOcStatus(2);
     OneCommentEntity oneCommentEntity = oneCommentRepository.save(oneEntity);
+
+    UserInfoEntity newEntity = new UserInfoEntity(userInfoEntity, -200);
+    useInfoRepository.save(newEntity);
+
     return oneCommentEntity;
   }
 
   @Transactional
-  public Page<OneCommentListDTO> oneCommentList(Long bookSeq, Pageable pageable){
-    BookInfoEntity bookInfoEntity = bookRepository.findByBiSeq(bookSeq);
+  public Page<OneCommentListDTO> oneCommentList(String isbn, Pageable pageable){
+    BookInfoEntity bookInfoEntity = bookRepository.findByBiIsbnEquals(isbn);
     if (bookInfoEntity == null)
-      throw new ReadersProjectException(ErrorResponse.of(HttpStatus.NOT_FOUND, String.format("%s not found book", bookSeq)));
-    Page<OneCommentEntity> commentList = oneCommentRepository.findByBookInfoEntityAndOcStatus(bookInfoEntity,pageable, 1);
+      throw new ReadersProjectException(ErrorResponse.of(HttpStatus.NOT_FOUND, String.format("%s not found book", isbn)));
+    Page<OneCommentEntity> commentList = oneCommentRepository.findByBookInfoEntityAndOcStatusOrderByOcRegDtDesc(bookInfoEntity,pageable, 1);
     Page<OneCommentListDTO> onecommentDto = commentList.map(e-> OneCommentListDTO.toDto(e));
     return onecommentDto;
   }
 
-  public OneCommentEntity OneCommentUpdate(Long uiSeq, Long oneCommentSeq, String content) {
+  public OneCommentEntity OneCommentUpdate(Long uiSeq, Long oneCommentSeq, String content, Integer score) {
+    if (content == "" || content == null)
+      throw new ReadersProjectException(ErrorResponse.of(HttpStatus.BAD_REQUEST,String.format("update content is null or empty")));
+    if (score > 5 || score < 0)
+      throw new ReadersProjectException(ErrorResponse.of(HttpStatus.BAD_REQUEST,String.format("The score value is greater than 5 or less than 0")));  
     UserInfoEntity userInfoEntity = useInfoRepository.findByUiSeq(uiSeq);
     if (userInfoEntity == null)
       throw new ReadersProjectException(ErrorResponse.of(HttpStatus.NOT_FOUND,String.format("%s   not found userSeq", uiSeq)));
     OneCommentEntity oneCommentEntity = oneCommentRepository.findByOcSeq(oneCommentSeq);
     if (oneCommentEntity == null)
       throw new ReadersProjectException(ErrorResponse.of(HttpStatus.NOT_FOUND,String.format("%s   not found commentSeq", oneCommentSeq)));
-    if (oneCommentEntity.getOcComment().equals(content) )
-      throw new ReadersProjectException(ErrorResponse.of(HttpStatus.CREATED,String.format("content is equals")));
+    if (oneCommentEntity.getOcComment().equals(content) && oneCommentEntity.getOcScore().equals(score))
+      throw new ReadersProjectException(ErrorResponse.of(HttpStatus.CREATED,String.format("content and score is equals")));
     if(oneCommentEntity.getUserInfoEntity().equals(oneCommentSeq))
       throw new ReadersProjectException(ErrorResponse.of(HttpStatus.CREATED,String.format("not my comment")));
-    return oneCommentRepository.save(OneCommentEntity.update(oneCommentEntity, content));
+    return oneCommentRepository.save(OneCommentEntity.update(oneCommentEntity, content, score));
   }
 
   public OneCommentViewsDTO getOneComment(Long oneCommentSeq) {
