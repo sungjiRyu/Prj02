@@ -40,7 +40,7 @@ https://github.com/sungjiRyu/Prj02/assets/116089824/953838c7-8ac5-499d-8077-d254
 
 
 - 게시글 CRUD  
-  [▶ 코드 보러가기](https://github.com/sungjiRyu/prj01/blob/2b04fbf055e8703a6361e07ac2c2970695377f06/src/main/java/com/project1st/starbucks/admin/service/MemberService.java#L46)
+  [▶ 코드 보러가기](https://github.com/sungjiRyu/Prj02/blob/26ba3fad9d37e2dc410ecfbd0e07a56736aadf2e/src/main/java/com/readers/be3/service/ArticleService.java#L66)
   - 정규식을 사용해서 사용자의 입력값을 체크합니다.
   - AES 암호키로 사용자의 pwd를 암호화 합니다.  
 - 댓글 CRUD  
@@ -51,9 +51,9 @@ https://github.com/sungjiRyu/Prj02/assets/116089824/953838c7-8ac5-499d-8077-d254
 - 게시글 검색  
   [▶ 코드 보러가기](https://github.com/sungjiRyu/prj01/blob/760f9e3eebfbe216f46f1f840860061af4467327/src/main/resources/templates/addStore.html#L29)
   - axios 를 사용해서 비동기 방식으로 구현했습니다.
+- 파일 업로드
 
 
-- 백엔드 팀원2 : 류승지 - 독후감 관리, 댓글 관리
 
 
 
