@@ -22,7 +22,7 @@ https://github.com/sungjiRyu/Prj02/assets/116089824/953838c7-8ac5-499d-8077-d254
 
 ## 목차
 1. [제작 기간 & 제작 인원](#1-제작-기간--제작-인원)
-2. [멤버 구성](#2-멤버-구성)
+2. [담당 기능](#2-담당-기능)
 3. [사용 기술](#3-사용-기술)
 4. [ERD 설계](#4-erd-설계)
 5. [주요 코드](#5-주요-코드)
@@ -38,17 +38,24 @@ https://github.com/sungjiRyu/Prj02/assets/116089824/953838c7-8ac5-499d-8077-d254
 
 ## 2. 멤버 구성
 
-- 프론트엔드 팀장 : 오한수 - 기획, 피그마, 디자인, 캘린더 및 일정관리 기능, UI/UX, Git 관리
 
-- 프론트엔드 팀원1 : 반재원 - 회원가입 / 로그인 / 마이 페이지 / 이벤트 / 도서 검색 / 마라톤
+- 게시글 CRUD  
+  [▶ 코드 보러가기](https://github.com/sungjiRyu/prj01/blob/2b04fbf055e8703a6361e07ac2c2970695377f06/src/main/java/com/project1st/starbucks/admin/service/MemberService.java#L46)
+  - 정규식을 사용해서 사용자의 입력값을 체크합니다.
+  - AES 암호키로 사용자의 pwd를 암호화 합니다.  
+- 댓글 CRUD  
+  [▶ 코드 보러가기](https://github.com/sungjiRyu/prj01/blob/2b04fbf055e8703a6361e07ac2c2970695377f06/src/main/java/com/project1st/starbucks/admin/service/MemberService.java#L263)
+- id/pwd 찾기  
+  [▶ 코드 보러가기](https://github.com/sungjiRyu/prj01/blob/2b04fbf055e8703a6361e07ac2c2970695377f06/src/main/java/com/project1st/starbucks/admin/service/MemberService.java#L509)
+  - 문자와 이메일 발송 api를 이용해서 구현해보았습니다
+- 게시글 검색  
+  [▶ 코드 보러가기](https://github.com/sungjiRyu/prj01/blob/760f9e3eebfbe216f46f1f840860061af4467327/src/main/resources/templates/addStore.html#L29)
+  - axios 를 사용해서 비동기 방식으로 구현했습니다.
 
-- 백엔드 팀장 : 문주영 - 독서 일정 관리, 도서 정보 관리, 회원 포인트, Git 관리
-
-- 백엔드 팀원1 : 차대군 - 회원 관리, 마이 페이지
 
 - 백엔드 팀원2 : 류승지 - 독후감 관리, 댓글 관리
 
-- 백엔드 팀원2 : 김성민 - 랭킹 관리, 한줄평 관리
+
 
 
 <br><br><br>
