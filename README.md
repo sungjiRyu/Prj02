@@ -41,18 +41,15 @@ https://github.com/sungjiRyu/Prj02/assets/116089824/953838c7-8ac5-499d-8077-d254
 
 - 게시글 CRUD  
   [▶ 코드 보러가기](https://github.com/sungjiRyu/Prj02/blob/26ba3fad9d37e2dc410ecfbd0e07a56736aadf2e/src/main/java/com/readers/be3/service/ArticleService.java#L66)
-  - 정규식을 사용해서 사용자의 입력값을 체크합니다.
-  - AES 암호키로 사용자의 pwd를 암호화 합니다.  
+ 
 - 댓글 CRUD  
-  [▶ 코드 보러가기](https://github.com/sungjiRyu/prj01/blob/2b04fbf055e8703a6361e07ac2c2970695377f06/src/main/java/com/project1st/starbucks/admin/service/MemberService.java#L263)
-- id/pwd 찾기  
-  [▶ 코드 보러가기](https://github.com/sungjiRyu/prj01/blob/2b04fbf055e8703a6361e07ac2c2970695377f06/src/main/java/com/project1st/starbucks/admin/service/MemberService.java#L509)
-  - 문자와 이메일 발송 api를 이용해서 구현해보았습니다
-- 게시글 검색  
-  [▶ 코드 보러가기](https://github.com/sungjiRyu/prj01/blob/760f9e3eebfbe216f46f1f840860061af4467327/src/main/resources/templates/addStore.html#L29)
-  - axios 를 사용해서 비동기 방식으로 구현했습니다.
-- 파일 업로드
+  [▶ 코드 보러가기](https://github.com/sungjiRyu/Prj02/blob/a0a84a36dcb42acb6e057a1e1eae5c698c25d870/src/main/java/com/readers/be3/service/ArticleService.java#L310)
 
+- 게시글 검색  
+  [▶ 코드 보러가기](https://github.com/sungjiRyu/Prj02/blob/a0a84a36dcb42acb6e057a1e1eae5c698c25d870/src/main/java/com/readers/be3/service/ArticleService.java#L169)
+  
+- 파일 업로드
+ [▶ 코드 보러가기](https://github.com/sungjiRyu/Prj02/blob/a0a84a36dcb42acb6e057a1e1eae5c698c25d870/src/main/java/com/readers/be3/service/ArticleService.java#L127)
 
 
 
